@@ -18,7 +18,7 @@ unsigned int spitGolden(unsigned int index) {
 	return 1;
 }
 
-unsigned int spitSqrt(unsigned int index) {
+unsigned int spitSqrt2(unsigned int index) {
 	return index == 0 ? 1 : 2;
 }
 
@@ -26,4 +26,11 @@ unsigned int spitEuler(unsigned int index) {
 	if(index == 0) return 2;
 	if(index % 3 != 2) return 1;
 	return (index / 3 + 1) * 2;
+}
+
+int spitSqrt8(int index)
+{
+	if(index == 0) return 2;
+	if(index % 2 == 0) return 4;
+	if(index% 2 != 0) return 1;
 }
