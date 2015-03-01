@@ -1,4 +1,5 @@
 #include "flowers.h"
+#include <cmath>
 
 unsigned int spitEulerSquare(unsigned int index) {
 	if(index ==0)return 7;
@@ -10,11 +11,23 @@ unsigned int spitEulerSquare(unsigned int index) {
 	}
 	if(index%6 == 0)
 	{
-		return 2 + (index/6)*3;
+		return  2 + (index/6)*3;
 	}
-	if(index%4 == 0)
+	if(index%4 == 0 || index%4 == 1)
 	{
-		return (index/4)*3;
+		return 3*(index/4);
+	}
+	if(index == 11)
+	{
+		return 8;
+	}
+	if(index == 16)
+	{
+		return 11;
+	}
+	if(index == 14)
+	{
+		return 9;
 	}
 
 }
@@ -29,11 +42,11 @@ Fraction getApproximation(ContinuedFraction &fr, unsigned int n){
 
 	fr = ignoreInt(fr);
 
-    Fraction y;
-    y.numerator= fr.fixedPart[1];
+	Fraction y;
+	y.numerator = spit(fr,n);
     y.denominator = 1;
 
-    if(n == 1 || fr.fixedPart[1] == 0)
+    if(n == 1 || spit(fr,n) == 0)
     {
     	return y;
     }
@@ -45,7 +58,7 @@ Fraction getApproximation(ContinuedFraction &fr, unsigned int n){
 		temp.denominator = x.denominator;
 		x.denominator = temp.numerator;
 		x.numerator = temp.denominator;
-		x.numerator = x.numerator + x.denominator*fr.fixedPart[0];
+		x.numerator = x.numerator + x.denominator*spit(fr,n);
 		return x;
     }
 
@@ -54,15 +67,21 @@ Fraction getApproximation(ContinuedFraction &fr, unsigned int n){
 double getAngle(ContinuedFraction &theta, int k) {
    Fraction frac = getApproximation(theta,7);
 
-   return (frac.numerator*k)/(frac.denominator);
+   return (frac.numerator*k*2*M_PI)/(frac.denominator);
 }
 
 Seed getSeed(ContinuedFraction &theta, int k) {
-    // TODO : add code here
-}
 
+	Seed s;
+
+	s.x = sqrt(k/M_PI) * cos(getAngle(theta,k));
+	s.y = sqrt(k/M_PI) * sin(getAngle(theta,k));
+
+	return s;
+}
 void pushSeed(std::list<Seed> &flower, ContinuedFraction &theta) {
-    // TODO : add code here
+	Seed s = getSeed(theta,theta.periodicPart[1]);
+	flower.push_front(s);
 }
 
 int spitNextMagicBox(MagicBox &box) {
