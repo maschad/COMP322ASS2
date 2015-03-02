@@ -88,56 +88,71 @@ void pushSeed(std::list<Seed> &flower, ContinuedFraction &theta) {
 int spitNextMagicBox(MagicBox &box) {
 	int temp1,temp2;
 
-	if(box.l != 0 && box.k != 0)
+	if(box.l == 0 && box.k != 0)
 	{
-		if((int)(box.i/box.k) == (int)( box.j/box.l))
-		{
-			int q = (int)(box.i/box.k);
+		int p = spit(box.boxedFraction,box.indexInBoxedFraction);
+		temp1 = box.j;
+		temp2 = box.l;
 
-			temp1 = box.k;
-			temp2 = box.l;
+		box.j = box.i + (box.j*p);
+		box.l = box.k + (box.l*p);
 
-			box.k = box.i - (box.k*q);
-			box.l = box.j - (box.l*q);
+		box.i = temp1;
+		box.k = temp2;
 
-			box.i = temp1;
-			box.j = temp2;
-
-			return q;
-		}
-		if((int)(box.i/box.k) != (int)( box.j/box.l) && box.k != 0 && box.l == 0)
-		{
-			int p = spit(box.boxedFraction,box.indexInBoxedFraction);
-			temp1 = box.j;
-			temp2 = box.l;
-
-			box.j = box.i + (box.j*p);
-			box.l = box.k + (box.l*p);
-
-			box.i = temp1;
-			box.k = temp2;
-
-			return p;
-		}
-		if((int)(box.i/box.k) != (int)( box.j/box.l) && box.l != 0 && box.k == 0)
-		{
-			int p = spit(box.boxedFraction,box.indexInBoxedFraction);
-			temp1 = box.j;
-			temp2 = box.l;
-
-			box.j = box.i + (box.j*p);
-			box.l = box.k + (box.l*p);
-
-			box.i = temp1;
-			box.k = temp2;
-
-			return p;
-		}
+		return p;
 	}
-	if(box.indexInBoxedFraction == box.boxedFraction.fixedPart.size() && (box.indexInBoxedFraction == box.boxedFraction.periodicPart.size()))
+	if(box.k == 0 && box.l != 0)
+	{
+		int p = spit(box.boxedFraction,box.indexInBoxedFraction);
+		temp1 = box.j;
+		temp2 = box.l;
+
+		box.j = box.i + (box.j*p);
+		box.l = box.k + (box.l*p);
+
+		box.i = temp1;
+		box.k = temp2;
+
+		return p;
+	}
+	if((int)(box.i/box.k) != (int)( box.j/box.l))
+	{
+
+		int p = spit(box.boxedFraction,box.indexInBoxedFraction);
+		temp1 = box.j;
+		temp2 = box.l;
+
+		box.j = box.i + (box.j*p);
+		box.l = box.k + (box.l*p);
+
+		box.i = temp1;
+		box.k = temp2;
+
+		return p;
+
+	}
+	if((int)(box.i/box.k) == (int)( box.j/box.l))
+	{
+		int q = (int)(box.i/box.k);
+
+		temp1 = box.k;
+		temp2 = box.l;
+
+		box.k = box.i - (box.k*q);
+		box.l = box.j - (box.l*q);
+
+		box.i = temp1;
+		box.j = temp2;
+
+		return q;
+	}
+	if(box.k == 0 && box.l == 0)
 	{
 		box.k = box.l;
 		box.i = box.j;
+
+		return -1;
 
 	}
 
@@ -146,11 +161,17 @@ int spitNextMagicBox(MagicBox &box) {
 ContinuedFraction getCFUsingMB(ContinuedFraction &f, int a, int b, int length) {
 		MagicBox box;
 
-		while(f.fixedPart.size() < length)
-		{
-			f.fixedPart.push_back(a + b * spitNextMagicBox(box));
-		}
+		box.boxedFraction = f;
+		box.i = a;
+		box.j = b;
+		box.k = 1;
+		box.l = 0;
 
+		while(f.fixedPart.size() < length && spitNextMagicBox(box) != -1)
+		{
+			f.fixedPart.push_back(a + b*spitNextMagicBox(box));
+			box.indexInBoxedFraction++;
+		}
 		return f;
 }
 
