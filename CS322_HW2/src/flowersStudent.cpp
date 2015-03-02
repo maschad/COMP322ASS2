@@ -17,57 +17,58 @@ unsigned int spitEulerSquare(unsigned int index) {
 	{
 		return 3*(index/4);
 	}
-	if(index == 11)
-	{
-		return 8;
-	}
-	if(index == 16)
-	{
-		return 11;
-	}
-	if(index == 14)
-	{
-		return 9;
-	}
 
 }
 
 ContinuedFraction ignoreInt(ContinuedFraction f)
 {
-	f.fixedPart[0] = 0;
+	if(!f.fixedPart.empty())
+	{
+		f.fixedPart[0] = 0;
+	}
+	if(!f.periodicPart.empty() && f.fixedPart.empty())
+	{
+		f.periodicPart[0] = 0;
+	}
 	return f;
 }
 
 Fraction getApproximation(ContinuedFraction &fr, unsigned int n){
 
-	fr = ignoreInt(fr);
-
-	Fraction y;
-	y.numerator = spit(fr,n);
-    y.denominator = 1;
-
-    if(n == 1 || spit(fr,n) == 0)
-    {
-    	return y;
-    }
-    else
-    {
-		Fraction x = getApproximation(fr,n-1);
-		Fraction temp;
-		temp.numerator = x.numerator;
-		temp.denominator = x.denominator;
-		x.denominator = temp.numerator;
-		x.numerator = temp.denominator;
-		x.numerator = x.numerator + x.denominator*spit(fr,n);
-		return x;
-    }
+	Fraction *result = new Fraction;
+	    int i = n;
+	    int temp = 0;
+		while (i > 1)
+		{
+			if (i == n)
+			{
+				result->numerator = 1;
+				result->denominator = spit(fr, i-1);
+				i--;
+			}
+			else
+			{
+				temp = result->numerator;
+				result->numerator = result->denominator;
+				result->denominator = result->denominator * spit(fr, i-1) + temp;
+				i--;
+			}
+		}
+		if (i == 1)
+		{
+			result->numerator = result->denominator * spit(fr, i-1) + result->numerator;
+		}
+		return *result;
 
 }
 
 double getAngle(ContinuedFraction &theta, int k) {
-   Fraction frac = getApproximation(theta,7);
+	theta = ignoreInt(theta);
+	Fraction frac = getApproximation(theta,7);
+	int y = frac.numerator * k;
+	auto z = y % frac.denominator;
+	return (z*2*M_PI)/frac.denominator;
 
-   return (frac.numerator*k*2*M_PI)/(frac.denominator);
 }
 
 Seed getSeed(ContinuedFraction &theta, int k) {
@@ -80,16 +81,77 @@ Seed getSeed(ContinuedFraction &theta, int k) {
 	return s;
 }
 void pushSeed(std::list<Seed> &flower, ContinuedFraction &theta) {
-	Seed s = getSeed(theta,theta.periodicPart[1]);
-	flower.push_front(s);
+	Seed s = getSeed(theta,flower.size());
+	flower.push_back(s);
 }
 
 int spitNextMagicBox(MagicBox &box) {
-    // TODO : add code here
+	int temp1,temp2;
+
+	if(box.l != 0 && box.k != 0)
+	{
+		if((int)(box.i/box.k) == (int)( box.j/box.l))
+		{
+			int q = (int)(box.i/box.k);
+
+			temp1 = box.k;
+			temp2 = box.l;
+
+			box.k = box.i - (box.k*q);
+			box.l = box.j - (box.l*q);
+
+			box.i = temp1;
+			box.j = temp2;
+
+			return q;
+		}
+		if((int)(box.i/box.k) != (int)( box.j/box.l) && box.k != 0 && box.l == 0)
+		{
+			int p = spit(box.boxedFraction,box.indexInBoxedFraction);
+			temp1 = box.j;
+			temp2 = box.l;
+
+			box.j = box.i + (box.j*p);
+			box.l = box.k + (box.l*p);
+
+			box.i = temp1;
+			box.k = temp2;
+
+			return p;
+		}
+		if((int)(box.i/box.k) != (int)( box.j/box.l) && box.l != 0 && box.k == 0)
+		{
+			int p = spit(box.boxedFraction,box.indexInBoxedFraction);
+			temp1 = box.j;
+			temp2 = box.l;
+
+			box.j = box.i + (box.j*p);
+			box.l = box.k + (box.l*p);
+
+			box.i = temp1;
+			box.k = temp2;
+
+			return p;
+		}
+	}
+	if(box.indexInBoxedFraction == box.boxedFraction.fixedPart.size() && (box.indexInBoxedFraction == box.boxedFraction.periodicPart.size()))
+	{
+		box.k = box.l;
+		box.i = box.j;
+
+	}
+
 }
 
 ContinuedFraction getCFUsingMB(ContinuedFraction &f, int a, int b, int length) {
-    // TODO : add code here
+		MagicBox box;
+
+		while(f.fixedPart.size() < length)
+		{
+			f.fixedPart.push_back(a + b * spitNextMagicBox(box));
+		}
+
+		return f;
 }
 
 
